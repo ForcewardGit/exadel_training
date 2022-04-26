@@ -1,1 +1,1 @@
-### Exadel Training ###
+### Homework 1 solution
