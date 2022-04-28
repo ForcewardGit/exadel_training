@@ -1,14 +1,19 @@
+from types import NoneType
+
+
 class converter:
     def csv_to_json(self, csv_file_name: str):
         """ A class method to convert a csv file to a JSON file.
             Creates a new file with a name just like a given file name.
+            Returns a dictionary representation of a csv.
         """
         ### Create a dictionary from a csv file ###
-        d = dict()
+        d = dict() # csv column names as keys, values - column content
         with open(csv_file_name, "r") as f:
             content = f.read().split("\n")
             dict_keys = content[0].split(",")
 
+        ### Ignore empty rows ###
         content = [content_data for content_data in content if content_data != ""]
         
         ### In case when the file content is not filled ###
@@ -30,52 +35,77 @@ class converter:
         for i in range(1, len(content)):
             row_data = content[i].split(",")
             for j in range(len(row_data)):
+                record = row_data[j]
                 if row_data[j].isnumeric():
-                    try:
-                        if len(content) > 2:
-                            d[dict_keys[j]].append(int(row_data[j]))
-                        else:
-                            d[dict_keys[j]] = int(row_data[j])
-                    except ValueError:
-                        if len(content) > 2:
-                            d[dict_keys[j]].append(row_data[j])
-                        else:
-                            d[dict_keys[j]] = row_data[j]                     
+                    if len(content) > 2:
+                        d[dict_keys[j]].append(int(record))
+                    else:
+                        d[dict_keys[j]] = int(record)
+                elif record.lower() == "true" or record.lower() == "false":
+                    flag = True if record.lower() == "true" else False
+                    if len(content) > 2:
+                        d[dict_keys[j]].append(flag)
+                    else:
+                        d[dict_keys[j]] = flag
                 else:
+                    if record.lower() == "null":
+                        record = None
                     try:
                         if len(content) > 2:
-                            d[dict_keys[j]].append(float(row_data[j]))
+                            d[dict_keys[j]].append(float(record))
                         else:
-                            d[dict_keys[j]] = float(row_data[j])
-                    except ValueError:
+                            d[dict_keys[j]] = float(record)
+                    except (ValueError, TypeError):
                         if len(content) > 2:
-                            d[dict_keys[j]].append(row_data[j])
+                            d[dict_keys[j]].append(record)
                         else:
-                            d[dict_keys[j]] = row_data[j]
-
-            
+                            d[dict_keys[j]] = record
+   
         ### Create json file and load data to it ###
         json_file_name = csv_file_name.split(".")[0] + ".json"
         with open(json_file_name, "w") as f:
-            f.write("{")
+            f.write("{\n\t")
             i = 0
             for key, value in d.items():
                 i += 1
-                feature = "\"" + key + "\"" + ": " + str(value)
-                f.write(feature + ",") if i != len(d) else f.write(feature)
-            f.write("}")
+                feature = "\"" + key + "\"" + ": "
+                # print(value, value[0] is value[-1], value[0] == value[-1])
+                if len(content) > 2:
+                    feature += "["
+                    for k in range(len(value)):
+                        v = value[k]
+                        if type(v) is bool:
+                            feature += str(v).lower()
+                        elif type(v) is NoneType:
+                            feature += "null"
+                        elif type(v) is str:
+                            feature += "\"" + v + "\""
+                        else:
+                            feature += str(v)
+                        feature += ", " if k != len(value)-1 else ""
+                    feature += "]"
+                else:
+                    if type(value) is bool:
+                        feature += str(value).lower()
+                    elif type(value) is NoneType:
+                        feature += "null"
+                    elif type(value) is str:
+                        feature += "\"" + str(value) + "\""
+                    else:
+                        feature += str(value)
+                f.write(feature + ",\n\t") if i != len(d) else f.write(feature)
+            f.write("\n}")
         
         ### Get rid of ' if there are any ###
         with open(json_file_name, "r") as f:
             content = f.read()
             content = content.replace("'", "\"")
-            print(content)
         
-        ### Write new string without ' characters ###
+        ### Write new string without ' characters ###_
         with open(json_file_name, "w") as f:
             f.write(content)
 
-        return None
+        return d
 
 
     def json_to_csv(self, json_file_name: str):
