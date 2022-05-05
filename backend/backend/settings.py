@@ -37,6 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "offers.apps.OffersConfig",
+    "service_requests.apps.ServiceRequestsConfig",
+    "sign_up_in_out.apps.SignUpInOutConfig",
 ]
 
 MIDDLEWARE = [
