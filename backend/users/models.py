@@ -52,7 +52,8 @@ class Address(models.Model):
 class Service(models.Model):
     """ Stores the types of services that companies may provide.
     """
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30, unique=True)
+    description = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.name

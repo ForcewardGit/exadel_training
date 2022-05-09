@@ -1,0 +1,18 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<h2>{{ service.name }}</h2>
+<p>Description:</p>
+{% if service.description  %}
+    <p>{{ service.description }}</p>
+{% else %}
+    <p>No description is provided!</p>
+{% endif %}
+
+<div>
+    <a href="{% url 'service_companies' service.id %}">Companies</a>
+    <a href="{% url 'services' %}">Back to services</a>
+</div>
+
+{% endblock %}
