@@ -53,6 +53,7 @@ class Service(models.Model):
     """ Stores the types of services that companies may provide.
     """
     name = models.CharField(max_length=30)
+    companies = models.ManyToManyField(Company)
 
     def __str__(self):
         return self.name

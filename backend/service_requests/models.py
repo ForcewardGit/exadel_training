@@ -1,14 +1,14 @@
 from django.db import models
-from users.models import Company, RegularUser, Address
+from users.models import Company, RegularUser, Address, Service
 
 
 class Request(models.Model):
     date = models.DateTimeField(auto_now=True)
     total_area = models.FloatField()
     user = models.ForeignKey(RegularUser, on_delete=models.CASCADE)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    # T0D0: Filter the companies so that we have only those which provide a selected service
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    # company_services = [(s, s) for s in company.services.all()]
-    service = models.CharField(max_length=30)
     address = models.ForeignKey(Address, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
