@@ -1,0 +1,15 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<h2>Choose, which user's requests you  want to see</h2>
+
+<ul>
+    {% for user in users %}
+        <li>
+            <a href="{% url 'requests-user_requests' user.user.username %}">{{ user.user.username }}</a>
+        </li>
+    {% empty %}
+        <li>No requests were made by user {{user.username}}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

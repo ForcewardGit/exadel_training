@@ -1,0 +1,20 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<h2>{{ service.name }}</h2>
+<h3>Average price for this service: {{ service.avg_price }}</h3>
+<p>Description:</p>
+{% if service.description  %}
+    <p>{{ service.description }}</p>
+{% else %}
+    <p>No description is provided!</p>
+{% endif %}
+
+<div>
+    <a href="{% url 'service_companies' service.id %}">Companies which provide this service</a><br>
+    <a href="{% url 'services' %}">Back to services list</a><br>
+    <a href="{% url 'index' %}">Back to main page</a><br>
+</div>
+
+{% endblock %}

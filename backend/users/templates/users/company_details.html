@@ -1,0 +1,17 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<h1>Company: {{ company.name }}</h1>
+<p>Rating: {{ company.rating }}</p>
+<p>Hourly cost for services: {{ company.cost_per_hour }}</p>
+<p>Services:</p>
+<ul>
+    {% for service in company.services.all %}
+        <li>{{ service.name }}</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'index' %}">Back to main page</a>
+
+{% endblock %}
