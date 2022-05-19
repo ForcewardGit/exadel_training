@@ -1,5 +1,3 @@
-from multiprocessing import set_forkserver_preload
-from urllib import request
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
@@ -67,5 +65,5 @@ class UserRequestDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["username"] = self.request.user.username
+        context["username"] = kwargs["object"].user.user.username
         return context
