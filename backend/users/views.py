@@ -13,7 +13,8 @@ def general_users(request):
         serializer = UserSerializer(data = request.data)
         if serializer.is_valid():
             serializer.save()
-        return Response(serializer.data)
+            return Response(serializer.data)
+        return Response(serializer.errors)
 
     all_users = User.objects.all()
     serializer = UserSerializer(all_users, many = True)
@@ -71,8 +72,7 @@ def user_details(request, username):
         return Response(serializer.data)
 
     elif request.method == "PUT":
-        data = JSONParser().parse(request)
-        serializer = UserSerializer(user, data=data)
+        serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

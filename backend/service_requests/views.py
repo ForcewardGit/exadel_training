@@ -1,13 +1,37 @@
 from django.http import Http404
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework import viewsets
+from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.renderers import StaticHTMLRenderer
 
 from .models import Request
 from .serializers import RequestSerializer
 from users.models import User, RegularUser
 
+
+
+### With Viewsets ###
+class RequestViewSet(viewsets.ModelViewSet):
+    queryset = Request.objects.all()
+    serializer_class = RequestSerializer
+
+    @action(detail=False, renderer_classes=[StaticHTMLRenderer])
+    def user_requests(self, request, *args, **kwargs):
+        try:
+            general_user = User.objects.get(username=kwargs["username"])
+        except User.DoesNotExist:
+            raise Http404
+        user = RegularUser.objects.get(user = general_user)
+        requests = Request.objects.filter(user = user)
+        serializer = RequestSerializer(requests, many = True)
+
+        return Response(serializer.data)
+
+
+
+###############################################################################################################
 
 
 ### With Class-Based Views ###
@@ -50,6 +74,12 @@ class RequestDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+
+###############################################################################################################
+
+
+### With Function Views ###
+
 @api_view(["GET", "POST"])
 def all_requests(request):
     if request.method == "GET":
@@ -74,7 +104,10 @@ def request_detail(request, pk):
 
 @api_view(["GET"])
 def user_requests(request, username):
-    general_user = User.objects.get(username = username)
+    try:
+        general_user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        raise Http404
     user = RegularUser.objects.get(user = general_user)
     requests = Request.objects.filter(user = user)
     serializer = RequestSerializer(requests, many = True)
