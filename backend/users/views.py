@@ -38,6 +38,7 @@ def regular_users(request):
 def regular_user(request, pk):
     try:
         user = RegularUser.objects.get(id = pk)
+        print(request.user.is_staff, user.user.is_staff)
     except RegularUser.DoesNotExist:
         return HttpResponse(status = 404)
 
@@ -46,16 +47,19 @@ def regular_user(request, pk):
         return Response(serializer.data)
     
     elif request.method == "PUT":
-        # data = JSONParser().parse(request)
-        serializer = RegularUserSerializer(user, data = request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return JsonResponse(serializer.errors, status = 400)
+        if request.user.id == user.user.id or request.user.is_staff:
+            serializer = RegularUserSerializer(user, data = request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return JsonResponse(serializer.errors, status = 400)
+        return HttpResponse(status=401)
     
     elif request.method == "DELETE":
-        user.delete()
-        return HttpResponse(status = 204)
+        if (request.user.id == user.user.id or request.user.is_staff):
+            user.delete()
+            return HttpResponse(status = 204)
+        return HttpResponse(status=401)
 
 
 
@@ -71,16 +75,20 @@ def user_details(request, username):
         return Response(serializer.data)
 
     elif request.method == "PUT":
-        data = JSONParser().parse(request)
-        serializer = UserSerializer(user, data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return JsonResponse(serializer.errors, status=400)
+        if request.user.id == user.user.id or request.user.is_staff:
+            data = JSONParser().parse(request)
+            serializer = UserSerializer(user, data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return JsonResponse(serializer.errors, status=400)
+        return HttpResponse(status=401)
 
     elif request.method == 'DELETE':
-        user.delete()
-        return HttpResponse(status=204)
+        if request.user.id == user.user.id or request.user.is_staff:
+            user.delete()
+            return HttpResponse(status=204)
+        return HttpResponse(status=401)
 
 
 @api_view(["GET", "POST"])
@@ -110,15 +118,19 @@ def company_details(request, name):
         return Response(serializer.data)
     
     elif request.method == "PUT":
-        serializer = CompanySerializer(company, data = request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return JsonResponse(serializer.errors, status = 400)
+        if request.user.id == company.user.id or request.user.is_staff:
+            serializer = CompanySerializer(company, data = request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return JsonResponse(serializer.errors, status = 400)
+        return HttpResponse(status=401)
     
     elif request.method == "DELETE":
-        company.delete()
-        return HttpResponse(status=204)
+        if request.user.id == company.user.id or request.user.is_staff:
+            company.delete()
+            return HttpResponse(status=204)
+        return HttpResponse(status=401)
 
 
 ### Service views ###
@@ -148,15 +160,19 @@ def service_detail(request, pk):
         return Response(serializer.data)
     
     elif request.method == "PUT":
-        serializer = ServiceSerializer(service, data = request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return JsonResponse(serializer.errors, status = 400)
+        if request.user.is_staff:
+            serializer = ServiceSerializer(service, data = request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return JsonResponse(serializer.errors, status = 400)
+        return HttpResponse(status=401)
     
     elif request.method == "DELETE":
-        service.delete()
-        return HttpResponse(status=204)
+        if request.user.is_staff:
+            service.delete()
+            return HttpResponse(status=204)
+        return HttpResponse(status=401)
 
 
 @api_view(["GET"])
