@@ -13,10 +13,12 @@ from users.models import RegularUser
 ### With Class-Based Views ###
 class RequestsList(APIView):
     def get(self, request, format=None):
-        requests = Request.objects.all()
-        serializer = RequestSerializer(requests, many = True)
-        return Response(serializer.data)
-    
+        if request.user.is_staff:
+            requests = Request.objects.all()
+            serializer = RequestSerializer(requests, many = True)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+            
     def post(self, request, format=None):
         serializer = RequestSerializer(data = request.data)
         if serializer.is_valid():
@@ -33,12 +35,14 @@ class RequestDetail(APIView):
 
     def get(self, request, pk, format=None):
         r = self.get_object(pk) # request object with id = pk
-        serializer = RequestSerializer(r)
-        return Response(serializer.data)
+        if request.user.is_staff or request.user.id == r.user.user.id:
+            serializer = RequestSerializer(r)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     def put(self, request, pk, format=None):
         r = self.get_object(pk)
-        if request.user.is_staff or request.user.id == r.user.user.id:            
+        if request.user.is_staff or request.user.id == r.user.user.id:
             serializer = RequestSerializer(r, data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -56,18 +60,14 @@ class RequestDetail(APIView):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(["GET", "POST"])
-def all_requests(request):
-    if request.method == "GET":
-        requests = Request.objects.all()
-        serializer = RequestSerializer(requests, many = True)
+### With Functional views ###
+@api_view(["POST"])
+def create_request(request):
+    serializer = RequestSerializer(data = request.data)
+    if serializer.is_valid():
+        serializer.save()
         return Response(serializer.data)
-
-    elif request.method == 'POST':
-        serializer = RequestSerializer(data = request.data)
-        if serializer.is_valid():
-            serializer.save()
-        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET", "PUT", "DELETE"])
@@ -75,8 +75,10 @@ def request_detail(request, pk):
     r = Request.objects.get(id = pk) # request object with id = pk
 
     if request.method == "GET":
-        serializer = RequestSerializer(r, many = False)
-        return Response(serializer.data)
+        if request.user.is_staff or request.user.id == r.user.user.id:
+            serializer = RequestSerializer(r, many = False)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     
     elif request.method == "DELETE":
         if request.user.is_staff or request.user.id == r.user.user.id:

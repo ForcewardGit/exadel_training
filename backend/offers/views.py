@@ -13,6 +13,11 @@ class OfferDetail(RetrieveUpdateDestroyAPIView):
     queryset = Offer.objects.all()
     serializer_class = OfferSerializer
 
+    def get(self, request, *args, **kwargs):
+        if request.user == self.get_object().user.user or request.user.is_staff:
+            return RetrieveUpdateDestroyAPIView.get(self, request, *args, **kwargs)
+        return Response(status=401)
+
     def put(self, request, *args, **kwargs):
         if request.user == self.get_object().user.user or request.user.is_staff:
             return RetrieveUpdateDestroyAPIView.put(self, request, *args, **kwargs)
