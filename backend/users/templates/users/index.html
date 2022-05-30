@@ -1,0 +1,26 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<h2>Regular Users</h2>
+<ul>
+    {% for user in users %}
+        <li><a href="{% url 'users-regular_user' user.id %}">{{ user }}</a></li>
+    {% endfor %}
+</ul>
+
+<h2>Companies</h2>
+<ul>
+    {% for company in companies %}
+        <li><a href="{% url 'users-company_details' company.name %}">{{ company }}</a></li>
+    {% endfor %}
+</ul>
+
+<h2>Services</h2>
+<ul>
+    {% for service in services %}
+        <li><a href="{% url 'service_detail' service.id %}">{{ service }}</a></li>
+    {% endfor %}
+</ul>
+
+{% endblock content %}

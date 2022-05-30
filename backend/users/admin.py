@@ -1,3 +1,8 @@
 from django.contrib import admin
+from .models import RegularUser, Company, Address, Service
 
-# Register your models here.
+
+admin.site.register(RegularUser)
+admin.site.register(Company)
+admin.site.register(Address)
+admin.site.register(Service)

@@ -13,7 +13,7 @@ class Request(models.Model):
     address = models.ForeignKey(Address, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
-        return self.id
+        return f"Request {self.id}"
 
 
 class Notification(models.Model):

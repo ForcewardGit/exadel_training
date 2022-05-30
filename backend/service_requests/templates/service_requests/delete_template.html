@@ -1,0 +1,12 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<form action="" method="POST">
+    <p>Are you sure to delete request "{{ request }}"?</p>
+    {% csrf_token %}
+    <a href="{% url 'requests-user_requests' username %}">Cancel</a>
+    <input type="submit", value="Yes">
+</form>
+
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<h2>The request {{ request.id }} created by {{ request.user }}</h2>
+<p>Service: {{ request.service }}</p>
+<p>Date: {{ request.date }}</p>
+<p>Total area: {{ request.total_area }}</p>
+<p>To company: {{ request.company }}</p>
+<p>For address: {{ request.address }}</p>
+
+<a href="{% url 'requests-user_requests' username %}">Back to user requests</a>
+
+{% endblock %}

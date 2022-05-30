@@ -11,7 +11,7 @@ class RegularUser(models.Model):
     surname = models.CharField(max_length=50)
 
     def __str__(self):
-        return f"{self.user}"
+        return f"{self.name} {self.surname}"
 
 
 class Company(models.Model):
@@ -47,7 +47,7 @@ class Service(models.Model):
     """ Stores the types of services that companies may provide.
     """
     name = models.CharField(max_length=30)
-    avg_price = models.PositiveSmallIntegerField()
+    avg_price = models.PositiveSmallIntegerField(null=True)
 
     def __str__(self):
         return self.name
