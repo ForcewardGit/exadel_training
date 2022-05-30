@@ -5,7 +5,6 @@ from users.models import Company, RegularUser, Address, Service
 class Request(models.Model):
     date = models.DateTimeField(auto_now=True)
     total_area = models.FloatField()
-    
     user = models.ForeignKey(RegularUser, on_delete=models.CASCADE)
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
