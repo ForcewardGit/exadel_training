@@ -1,0 +1,20 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<h2>The requests created by user {{ user.username }}</h2>
+<p><a href="{% url 'requests-create' %}">Create a new request</a></p>
+
+<ul>
+    {% for request in user_requests %}
+        <li>Request: {{ request.date }}
+            <a href="{% url 'requests-user_request' request.id %}">View</a>
+            <a href="{% url 'requests-update' request.id %}">Update</a>
+            <a href="{% url 'requests-delete' request.id %}">Delete</a>
+        </li>
+    {% empty %}
+        <li>No requests were made by user {{user.username}}</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'requests-users' %}">Back to users</a>
+{% endblock %}

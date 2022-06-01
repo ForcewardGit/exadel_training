@@ -1,0 +1,11 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<h2>{{ user.username }}</h2>
+
+<div>
+    <a href="{% url 'general_users' %}">Back to general users list</a>
+</div>
+
+{% endblock %}

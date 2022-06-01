@@ -1,0 +1,14 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<h3>Companies which provide service "{{ service.name }}"</h3>
+<ul>
+    {% for company in companies %}
+        <li><a>{{ company.name }}</a></li>
+    {% empty %}
+        <li>No company provides service "{{ service.name }}" at the moment!</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'services' %}">Back to services list</a>
+{% endblock %}
