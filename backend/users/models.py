@@ -22,7 +22,7 @@ class Company(models.Model):
     name = models.CharField(max_length=30, unique=True)
     rating = models.FloatField(default=0.0, blank=True)
     cost_per_hour = models.PositiveSmallIntegerField(null=True, blank=True)
-    services = models.ManyToManyField('Service')
+    services = models.ManyToManyField('Service', null=True, blank=True)
 
     def __str__(self):
         return f"{self.name}"

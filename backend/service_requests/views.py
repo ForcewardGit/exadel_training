@@ -1,69 +1,109 @@
-from django.shortcuts import render
-from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
+from django.http import Http404
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from users.models import RegularUser, Company, User
 from .models import Request
-
-from django.views.generic import ListView, DetailView
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
-
+from .serializers import RequestSerializer
+from users.models import RegularUser
 
 
-### CRUD for Request ###
-class RequestCreateView(CreateView):
-    model = Request
-    fields = "__all__"
-    template_name = "service_requests/request_form.html"
-    success_url = reverse_lazy("requests-users")
+
+### With Class-Based Views ###
+class RequestsList(APIView):
+    def get(self, request, format=None):
+        if request.user.is_staff:
+            requests = Request.objects.all()
+            serializer = RequestSerializer(requests, many = True)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+            
+    def post(self, request, format=None):
+        serializer = RequestSerializer(data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+        return Response(serializer.data)       
 
 
-class RequestUpdateView(UpdateView):
-    model = Request
-    fields = "__all__"
-    template_name = "service_requests/request_form.html"
-    success_url = reverse_lazy("requests-users")
+class RequestDetail(APIView):
+    def get_object(self, pk):
+        try:
+            return Request.objects.get(id=pk)
+        except Request.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        r = self.get_object(pk) # request object with id = pk
+        if request.user.is_staff or request.user.id == r.user.user.id:
+            serializer = RequestSerializer(r)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    def put(self, request, pk, format=None):
+        r = self.get_object(pk)
+        if request.user.is_staff or request.user.id == r.user.user.id:
+            serializer = RequestSerializer(r, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    def delete(self, request, pk, format=None):
+        r = self.get_object(pk) # request object with id = pk
+        
+        if request.user.is_staff or request.user.id == r.user.user.id:
+            r.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-class RequestDeleteView(DeleteView):
-    model = Request
-    context_object_name = "request"
-    success_url = reverse_lazy("requests-users")
-    template_name = "service_requests/delete_template.html"
+### With Functional views ###
+@api_view(["POST"])
+def create_request(request):
+    serializer = RequestSerializer(data = request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET", "PUT", "DELETE"])
+def request_detail(request, pk):
+    r = Request.objects.get(id = pk) # request object with id = pk
+
+    if request.method == "GET":
+        if request.user.is_staff or request.user.id == r.user.user.id:
+            serializer = RequestSerializer(r, many = False)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["username"] = self.request.user.username
-        return context
+    elif request.method == "DELETE":
+        if request.user.is_staff or request.user.id == r.user.user.id:
+            r.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-def requests_users(request):
-    users = RegularUser.objects.all()
-    context = {"users": users}
-    return render(request, "service_requests/requests.html", context)
-
-
-class UserRequestListView(ListView):
-    template_name = "service_requests/user_requests.html"
-    context_object_name = "user_requests"
-
-    def get_queryset(self):
-        self.user = get_object_or_404(User, username = self.kwargs["username"])
-        self.user = RegularUser.objects.get(user = self.user)
-        return Request.objects.filter(user=self.user)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["user"] = self.user
-        return context
+    elif request.method == "PUT":
+        if request.user.is_staff or request.user.id == r.user.user.id:            
+            serializer = RequestSerializer(r, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-class UserRequestDetailView(DetailView):
-    model = Request
-    context_object_name = "request"
-    template_name = "service_requests/user_request.html"
+@api_view(["GET"])
+def user_requests(request, username):
+    if request.user.username == username or request.user.is_staff:
+        user = RegularUser.objects.get(user__username = username)
+        requests = Request.objects.filter(user = user)
+        serializer = RequestSerializer(requests, many = True)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["username"] = kwargs["object"].user.user.username
-        return context
+        return Response(serializer.data)
+
+    return Response(status=status.HTTP_401_UNAUTHORIZED)

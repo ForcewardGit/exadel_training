@@ -1,35 +1,44 @@
-"""backend URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import include, path
-from users.views import ServiceCreateView, ServiceListView, ServiceDetailView, ServiceUpdateView, ServiceDeleteView, service_companies, index
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+
+from users.views import services_list, service_detail, service_companies
+
+
+@api_view(["GET"])
+def api_overview(request):
+    allowed_urls = {
+        "/": "List of allowed urls",
+        "/users/": "List of General Users, Allowed methods: ['GET', 'POST']",
+        "/users/regular_users/": "List of Regular Users, Allowed methods: ['GET', 'POST']",
+        "/users/regular_users/<int:pk>/": "The detail page of a Regular User, Allowed methods: ['GET', 'PUT', 'DELETE']",
+        "/users/companies/": "The list of all Companies, Allowed methods: ['GET', 'POST']",
+        "/users/companies/<str:name>/": "The details about a Company, Allowed methods: ['GET', 'PUT', 'DELETE']",
+        "/users/<str:username>/": "The details of a General User, Allowed methods: ['GET', 'PUT', 'DELETE']",
+        "/requests/": "The list of all Requests, Allowed methods: ['GET', 'POST']",
+        "/requests/<int:pk>/": "Details about a Request, Allowed methods: ['GET', 'PUT', 'DELETE']",
+        "/requests/<str:username>/": "The requests of a user, Allowed methods: ['GET']",
+        "/offers/": "The list of all Offers, Allowed methods: ['GET', 'POST']",
+        "/offers/<int:pk>/": "The details of an Offer, Allowed methods: ['GET', 'PUT', 'DELETE']",
+        "/services/": "The list of all Services, Allowed methods: ['GET', 'POST']",
+        "/services/<int:pk>/": "The details of a Service, Allowed methods: ['GET', 'PUT', 'DELETE']",
+        "/services/<int:pk>/companies/": "The list of Companies providing a Service, Allowed methods: ['GET']",
+    }
+
+    return Response(allowed_urls)
+
 
 
 urlpatterns = [
+    path("", api_overview),
     path('admin/', admin.site.urls),
 
-    path("", index, name = "index"),
-    
     path("users/", include("users.urls")),
     path("requests/", include("service_requests.urls")),
+    path("offers/", include("offers.urls")),
 
-    path("services/", ServiceListView.as_view(), name = "services"),
-    path("services/<int:pk>/", ServiceDetailView.as_view(), name = "service_detail"),
-    path("services/create/", ServiceCreateView.as_view(), name = "services_create"),
-    path("services/<int:pk>/update/", ServiceUpdateView.as_view(), name = "services_update"),
-    path("services/<int:pk>/delete/", ServiceDeleteView.as_view(), name = "services_delete"),
+    path("services/", services_list, name = "services"),
+    path("services/<int:pk>/", service_detail, name = "service_detail"),
     path("services/<int:pk>/companies/", service_companies, name = "service_companies"),
 ]
