@@ -60,43 +60,6 @@ class RequestDetail(APIView):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-### With Functional views ###
-@api_view(["POST"])
-def create_request(request):
-    serializer = RequestSerializer(data = request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(["GET", "PUT", "DELETE"])
-def request_detail(request, pk):
-    r = Request.objects.get(id = pk) # request object with id = pk
-
-    if request.method == "GET":
-        if request.user.is_staff or request.user.id == r.user.user.id:
-            serializer = RequestSerializer(r, many = False)
-            return Response(serializer.data)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-    
-    elif request.method == "DELETE":
-        if request.user.is_staff or request.user.id == r.user.user.id:
-            r.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-    
-    elif request.method == "PUT":
-        if request.user.is_staff or request.user.id == r.user.user.id:            
-            serializer = RequestSerializer(r, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-
 @api_view(["GET"])
 def user_requests(request, username):
     if request.user.username == username or request.user.is_staff:
