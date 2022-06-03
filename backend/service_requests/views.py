@@ -1,8 +1,9 @@
 from django.http import Http404
 from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 from .models import Request
 from .serializers import RequestSerializer
@@ -12,6 +13,8 @@ from users.models import RegularUser
 
 ### With Class-Based Views ###
 class RequestsList(APIView):
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request, format=None):
         if request.user.is_staff:
             requests = Request.objects.all()
@@ -27,6 +30,8 @@ class RequestsList(APIView):
 
 
 class RequestDetail(APIView):
+    permission_classes = (IsAuthenticated,)
+
     def get_object(self, pk):
         try:
             return Request.objects.get(id=pk)
@@ -61,6 +66,7 @@ class RequestDetail(APIView):
 
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def user_requests(request, username):
     if request.user.username == username or request.user.is_staff:
         user = RegularUser.objects.get(user__username = username)
