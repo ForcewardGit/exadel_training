@@ -17,12 +17,11 @@ class RegularUser(models.Model):
 class Company(models.Model):
     """ Stores the users which have registered as a company in platform.
     """
-    user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
-
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=30, unique=True)
     rating = models.FloatField(default=0.0, blank=True)
     cost_per_hour = models.PositiveSmallIntegerField(null=True, blank=True)
-    services = models.ManyToManyField('Service', null=True, blank=True)
+    services = models.ManyToManyField('Service', null=True, blank=True, related_name="services")
 
     def __str__(self):
         return f"{self.name}"
