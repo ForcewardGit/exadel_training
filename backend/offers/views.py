@@ -9,12 +9,12 @@ from .serializers import OfferSerializer
 class OfferList(ListCreateAPIView):
     queryset = Offer.objects.all()
     serializer_class = OfferSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated,]
 
 class OfferDetail(RetrieveUpdateDestroyAPIView):
     queryset = Offer.objects.all()
     serializer_class = OfferSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated,]
 
     def get(self, request, *args, **kwargs):
         if request.user == self.get_object().user.user or request.user.is_staff:

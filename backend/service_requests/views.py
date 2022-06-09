@@ -13,7 +13,7 @@ from users.models import RegularUser
 
 ### With Class-Based Views ###
 class RequestsList(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated,]
 
     def get(self, request, format=None):
         if request.user.is_staff:
@@ -30,7 +30,7 @@ class RequestsList(APIView):
 
 
 class RequestDetail(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated,]
 
     def get_object(self, pk):
         try:
