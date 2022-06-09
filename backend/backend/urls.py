@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework_simplejwt import views as jwt_views
 
 from users.views import services_list, service_detail, service_companies
 
@@ -33,6 +34,9 @@ def api_overview(request):
 urlpatterns = [
     path("", api_overview),
     path('admin/', admin.site.urls),
+
+    path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
 
     path("users/", include("users.urls")),
     path("requests/", include("service_requests.urls")),
