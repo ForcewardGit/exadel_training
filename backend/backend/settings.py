@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,11 +41,25 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     "rest_framework",
+    'rest_framework_swagger',
+    "debug_toolbar",
 
     "users.apps.UsersConfig",
     "service_requests.apps.ServiceRequestsConfig",
     "offers.apps.OffersConfig",
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -52,6 +67,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -70,11 +86,18 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries' : {
+                'staticfiles': 'django.templatetags.static', 
+            }
         },
     },
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
 
 
 # Database
