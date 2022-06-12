@@ -1,27 +1,42 @@
 from django.http import HttpResponse, JsonResponse
+
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly
 
 from .models import User, RegularUser, Company, Service
-from .serializers import RegularUserSerializer, UserSerializer, CompanySerializer, ServiceSerializer
+from .serializers import RegularUserSerializer, UserSerializer, UserRegisterSerializer, CompanySerializer, ServiceSerializer
+from .permissions import GeneralUserPermission, RegularUserPermission, CompanyPermission
 
 
 @api_view(["GET", "POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated | IsAdminUser])
 def general_users(request):
     if request.method == 'POST':
         serializer = UserSerializer(data = request.data)
         if serializer.is_valid():
             serializer.save()
-        return Response(serializer.data)
-
-    if request.user.is_staff:
+            return Response(serializer.data, status = 201)
+        return HttpResponse(status = 400)
+    
+    elif request.method == "GET":
         all_users = User.objects.all()
         serializer = UserSerializer(all_users, many = True)
         return Response(serializer.data)
-    return HttpResponse(status=401)
+
+
+@api_view(["POST"])
+def register_user(request):
+    if request.method == "POST":
+        serializer = UserRegisterSerializer(data = request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({
+                "user": UserSerializer(user).data,
+                "message": "User was created successfully! To login -> get token."
+            }, status = 201)
+        return HttpResponse(status = 400)
 
 
 @api_view(["GET", "POST"])
@@ -31,18 +46,17 @@ def regular_users(request):
         serializer = RegularUserSerializer(data = request.data)
         if serializer.is_valid():
             serializer.save()
-        return Response(serializer.data)
+            return Response(serializer.data, status = 201)
+        return HttpResponse(status = 400)
 
     elif request.method == "GET":
-        if request.user.is_staff:
-            all_users = RegularUser.objects.all()
-            serializer = RegularUserSerializer(all_users, many = True)
-            return Response(serializer.data)
-        return HttpResponse(status=401)
+        all_users = RegularUser.objects.all()
+        serializer = RegularUserSerializer(all_users, many = True)
+        return Response(serializer.data)
 
 
 @api_view(["GET", "PUT", "DELETE"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated & (IsAdminUser | RegularUserPermission)])
 def regular_user(request, pk):
     try:
         user = RegularUser.objects.get(id = pk)
@@ -50,17 +64,15 @@ def regular_user(request, pk):
         return HttpResponse(status = 404)
 
     if request.method == "GET":
-        if request.user.is_staff or request.user.id == user.user.id:
-            serializer = RegularUserSerializer(user, many = False)
-            return Response(serializer.data)
-        return HttpResponse(status=401)
+        serializer = RegularUserSerializer(user, many = False)
+        return Response(serializer.data)
     
     elif request.method == "PUT":
         if request.user.is_staff or request.user.id == user.user.id:
             serializer = RegularUserSerializer(user, data = request.data)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data)
+                return Response(serializer.data, status = 200)
             return JsonResponse(serializer.errors, status = 400)
         return HttpResponse(status=401)
 
@@ -72,7 +84,7 @@ def regular_user(request, pk):
        
 
 @api_view(["GET", "PUT", "DELETE"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser | GeneralUserPermission])
 def user_details(request, username):
     try:
         user = User.objects.get(username=username)
@@ -80,27 +92,20 @@ def user_details(request, username):
         return HttpResponse(status=404)
 
     if request.method == "GET":
-        if request.user.is_staff or request.user.id == user.id:
-            serializer = UserSerializer(user, many = False)
-            return Response(serializer.data)
-        return HttpResponse(status=401)
+        serializer = UserSerializer(user, many = False)
+        return Response(serializer.data)
 
     elif request.method == "PUT":
-        if request.user.is_staff or request.user.id == user.id:
-            data = JSONParser().parse(request)
-            serializer = UserSerializer(user, data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return JsonResponse(serializer.errors, status=400)
-        return HttpResponse(status=401)
+        serializer = UserSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status = 200)
+        return JsonResponse(serializer.errors, status=400)
 
     elif request.method == 'DELETE':
-        if request.user.is_staff or request.user.id == user.id:
-            user.delete()
-            return HttpResponse(status=204)
-        return HttpResponse(status=401)
-
+        user.delete()
+        return HttpResponse(status=204)
+        
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
@@ -114,11 +119,12 @@ def companies_list(request):
         serializer = CompanySerializer(data = request.data)
         if serializer.is_valid():
             serializer.save()
-        return Response(serializer.data)
+            return Response(serializer.data, status = 201)
+        return HttpResponse(status = 400)
 
 
 @api_view(["GET", "PUT", "DELETE"])
-@permission_classes([IsAuthenticatedOrReadOnly])
+@permission_classes([IsAuthenticatedOrReadOnly, IsAdminUser | CompanyPermission])
 def company_details(request, name):
     try:
         company = Company.objects.get(name = name)
@@ -134,7 +140,7 @@ def company_details(request, name):
             serializer = CompanySerializer(company, data = request.data)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data)
+                return Response(serializer.data, status = 200)
             return JsonResponse(serializer.errors, status = 400)
         return HttpResponse(status=401)
     
@@ -158,7 +164,8 @@ def services_list(request):
         serializer = ServiceSerializer(data = request.data)
         if serializer.is_valid():
             serializer.save()
-        return Response(serializer.data)
+            return HttpResponse(status=201)
+        return HttpResponse(status=400)
 
 
 @api_view(["GET", "PUT", "DELETE"])

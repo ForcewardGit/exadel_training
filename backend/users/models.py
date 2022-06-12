@@ -31,7 +31,6 @@ class Address(models.Model):
     """ Stores the addresses of regular users.
     """
     user_id = models.ForeignKey(RegularUser, on_delete=models.CASCADE)
-
     country = models.CharField(max_length=30)
     city = models.CharField(max_length=50)
     street = models.CharField(max_length=50)
