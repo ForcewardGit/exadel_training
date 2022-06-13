@@ -73,6 +73,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'backend.urls'
 
+# To enable celery, run: `celery -A backend worker -l info`
+CELERY_BROKER_URL = 'amqp://localhost'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

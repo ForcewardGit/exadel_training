@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthentic
 from .models import User, RegularUser, Company, Service
 from .serializers import RegularUserSerializer, UserSerializer, UserRegisterSerializer, CompanySerializer, ServiceSerializer
 from .permissions import GeneralUserPermission, RegularUserPermission, CompanyPermission
+from .tasks import print_message_to_terminal
 
 
 @api_view(["GET", "POST"])
@@ -32,6 +33,7 @@ def register_user(request):
         serializer = UserRegisterSerializer(data = request.data)
         if serializer.is_valid():
             user = serializer.save()
+            print_message_to_terminal.delay()
             return Response({
                 "user": UserSerializer(user).data,
                 "message": "User was created successfully! To login -> get token."
