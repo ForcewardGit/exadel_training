@@ -11,10 +11,17 @@ fake = Faker()
 
 class TestRequestEndpoints:
     def create_request(self):
-        user1 = User.objects.create_user(username = "test_username_1", password = "test_password_name")
-        regular_user = RegularUser.objects.create(user = user1, name = fake.first_name(), surname = fake.last_name())
-        user2 = User.objects.create_user(username = "another_test_user", password = "test_password_name")
-        company = Company.objects.create(user = user2, name = "Exadel")
+        regular_user = RegularUser.objects.create(
+            username = "test_username_1",
+            password = "test_password_name",
+            name = fake.first_name(),
+            surname = fake.last_name()
+        )
+        company = Company.objects.create(
+            username = "another_test_user",
+            password = "test_password_name",
+            name = "Exadel"
+        )
         service = Service.objects.create(name = "Service Test")
         address = Address.objects.create(user_id = regular_user, country = "India", city = "Mumbai", street = "Some street road", house_number = 23, ap_number = 98)
 

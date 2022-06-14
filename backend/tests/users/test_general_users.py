@@ -68,25 +68,3 @@ class TestGeneralUserEndpoints:
         assert response.status_code == 204
         with pytest.raises(User.DoesNotExist):
             User.objects.get(username = user.username)
-    
-
-    def test_register(self):
-        client = APIClient()
-        url = reverse("register-user")
-
-        new_user_credentials = {
-            "username": "some_new_user",
-            "password": "user_new_password_1234"
-        }
-
-        credentials_with_existing_username =  {
-            "username": "some_new_user",
-            "password": "my_password"
-        }
-
-        response_1 = client.post(url, data = new_user_credentials)
-        response_2 = client.post(url, data = credentials_with_existing_username)
-
-        assert response_1.status_code == 201
-        assert User.objects.filter(username = new_user_credentials["username"])
-        assert response_2.status_code == 400

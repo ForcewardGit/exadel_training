@@ -20,7 +20,8 @@ class RegularUserFactory(DjangoModelFactory):
     class Meta:
         model = RegularUser
     
-    user = SubFactory(UserFactory)
+    username = "new_userr"
+    password = "user_new_password_1234"
     name = fake.first_name()
     surname = fake.last_name()
 
@@ -37,7 +38,8 @@ class CompanyFactory(DjangoModelFactory):
     class Meta:
         model = Company
     
-    user = SubFactory(UserFactory)
+    username = "new_company_owner"
+    password = "user_new_password_1234"
     name = fake.text(max_nb_chars = 30)
     rating = round(random.uniform(0.00, 5.00), 2)
     cost_per_hour = random.randint(1, 10000)

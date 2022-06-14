@@ -1,12 +1,11 @@
 from django.http import HttpResponse, JsonResponse
 
 from rest_framework.response import Response
-from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly
 
 from .models import User, RegularUser, Company, Service
-from .serializers import RegularUserSerializer, UserSerializer, UserRegisterSerializer, CompanySerializer, ServiceSerializer
+from .serializers import RegularUserSerializer, UserSerializer, RegularUserRegisterSerializer, CompanyRegisterSerializer,CompanySerializer, ServiceSerializer
 from .permissions import GeneralUserPermission, RegularUserPermission, CompanyPermission
 
 
@@ -27,16 +26,28 @@ def general_users(request):
 
 
 @api_view(["POST"])
-def register_user(request):
+def register_regular_user(request):
     if request.method == "POST":
-        serializer = UserRegisterSerializer(data = request.data)
+        serializer = RegularUserRegisterSerializer(data = request.data)
         if serializer.is_valid():
             user = serializer.save()
             return Response({
-                "user": UserSerializer(user).data,
-                "message": "User was created successfully! To login -> get token."
+                "user": RegularUserSerializer(user).data,
+                "message": "User was created successfully! To login -> get token using your username and password."
             }, status = 201)
         return HttpResponse(status = 400)
+
+
+@api_view(["POST"])
+def register_company_user(request):
+    if request.method == "POST":
+        serializer = CompanyRegisterSerializer(data = request.data)
+        if serializer.is_valid():
+            company = serializer.save()
+            return Response({
+                "company": CompanySerializer(company).data,
+                "message": "Company was created successfully! To login -> get token using your username and password."
+            })
 
 
 @api_view(["GET", "POST"])
@@ -204,3 +215,4 @@ def service_companies(request, pk):
     serializer = CompanySerializer(filtered_companies, many = True)
 
     return Response(serializer.data)
+    
