@@ -75,6 +75,11 @@ ROOT_URLCONF = 'backend.urls'
 
 # To enable celery, run: `celery -A backend worker -l info`
 CELERY_BROKER_URL = 'amqp://localhost'
+CELERY_RESULT_BACKEND = 'rpc://guest@localhost//'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Tashkent'
 
 TEMPLATES = [
     {
